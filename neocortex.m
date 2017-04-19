@@ -5,9 +5,9 @@ l3 = 0;
 l2 = [0 0];
 l1 = [0 0 0 0];
 
-l3 = 0.1 * rand();
-l2 = 0.1 * rand(1, 2);
-l1 = 0.1 * rand(1, 4);
+l3 = 0.04 * rand();
+l2 = 0.04 * rand(1, 2);
+l1 = 0.04 * rand(1, 4);
 
 % weights
 w3 = 1;
@@ -30,7 +30,7 @@ b = [1, 1, 0.1];
 
 % data range
 dt = 1;
-tau = 0.2;
+tau = 1.0;
 r = 1:500;
 
 % y
@@ -108,10 +108,18 @@ for time = r
     
     % feed back drive
     zz1 = [0 0 0 0];
-    zz1(1) = (l2(1) - Z2(1))  .* v2(1) .* w1(1);
-    zz1(2) = (l2(1) - Z2(1))  .* v2(1) .* w1(2);
-    zz1(3) = (l2(2) - Z2(2))  .* v2(2) .* w1(3);
-    zz1(4) = (l2(2) - Z2(2))  .* v2(2) .* w1(4);
+%     zz1(1) = (l2(1) - Z2(1))  .* v2(1) .* w1(1);
+%     zz1(2) = (l2(1) - Z2(1))  .* v2(1) .* w1(2);
+%     zz1(3) = (l2(2) - Z2(2))  .* v2(2) .* w1(3);
+%     zz1(4) = (l2(2) - Z2(2))  .* v2(2) .* w1(4);
+    v1 = l1;
+    %v1 = y0;
+    beta1 = 1.0 * [1 1 1 1];
+    sigma1 = 0.81;
+    zz1(1) = v1(1)^2 / (beta1(2) * v1(2)^2 + sigma1);
+    zz1(2) = v1(2)^2 / (beta1(1) * v1(1)^2 + sigma1);
+    zz1(3) = v1(3)^2 / (beta1(4) * v1(4)^2 + sigma1);
+    zz1(4) = v1(4)^2 / (beta1(3) * v1(3)^2 + sigma1);
     
     % prior drive
     p = l1 - [pr pr pr pr]; 
@@ -157,8 +165,12 @@ for time = r
     
     % feed back drive
     zz2 = [0 0];
-    zz2(1) = (l3 - Z3) .* v3 .* w2(1);
-    zz2(2) = (l3 - Z3) .* v3 .* w2(2);
+%     zz2(1) = (l3 - Z3) .* v3 .* w2(1);
+%     zz2(2) = (l3 - Z3) .* v3 .* w2(2);
+    beta2 = [1 1];
+    sigma2 = 0.81;
+    zz2(1) = v2(1)^2 / (beta2(2) * v2(2)^2 + sigma2);
+    zz2(2) = v2(2)^2 / (beta2(1) * v2(1)^2 + sigma2);
     
     % prior drive
     p = l2 - [pr pr]; 
@@ -186,7 +198,9 @@ for time = r
     
     f = l3 - Z3;
     
-    zz3 = 1; %(l3 - Z3) .* v3 .* w2(1);
+    %zz3 = (l3 - Z3) .* v3 .* w2(1);
+    %zz3 = 1;
+    zz3 = 0;
     
     dydt = ...
         -a(3) * b(3) * f + ...
@@ -207,38 +221,38 @@ figure
 
 subplot(3,1,1)
 hold on
-plot(r, u31);
+plot([0 r], [0 u31]);
 
 subplot(3,1,2)
 hold on
-plot(r, u21);
-plot(r, u22);
+plot([0 r], [0 u21]);
+plot([0 r], [0 u22]);
 
 subplot(3,1,3)
 hold on
-plot(r, u11);
-plot(r, u12);
-plot(r, u13);
-plot(r, u14);
+plot([0 r], [0 u11]);
+plot([0 r], [0 u12]);
+plot([0 r], [0 u13]);
+plot([0 r], [0 u14]);
 
 % b-value (feedback drive)
-figure
-
-subplot(3,1,1)
-hold on
-plot(r, b31);
-
-subplot(3,1,2)
-hold on
-plot(r, b21);
-plot(r, b22);
-
-subplot(3,1,3)
-hold on
-plot(r, b11);
-plot(r, b12);
-plot(r, b13);
-plot(r, b14);
+% figure
+% 
+% subplot(3,1,1)
+% hold on
+% plot(r, b31);
+% 
+% subplot(3,1,2)
+% hold on
+% plot(r, b21);
+% plot(r, b22);
+% 
+% subplot(3,1,3)
+% hold on
+% plot(r, b11);
+% plot(r, b12);
+% plot(r, b13);
+% plot(r, b14);
 
 % (f)
 
